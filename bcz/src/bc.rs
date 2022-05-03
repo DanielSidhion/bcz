@@ -3,7 +3,7 @@ use std::{sync::{Arc, RwLock}, time::Duration, error::Error};
 use reqwest::{Client, Url};
 
 pub use crate::bc_artist_directory::Artists;
-use crate::{ScraperState, bc_artist_page::{ArtistDiscography}, bc_artist_directory::ArtistUrl, RuntimeScraperState};
+use crate::{ScraperState, bc_artist_page::{Releases, ReleaseUrl}, bc_artist_directory::ArtistUrl, RuntimeScraperState, ArtistDiscography};
 
 pub struct BcScraper {
     pub(crate) client: Client,
@@ -28,12 +28,15 @@ impl BcScraper {
     }
 
     pub fn artists(&self) -> Artists {
-        Artists::from(self)
+        Artists::from(&self)
     }
 
-    pub async fn parse_artist_discography(&self, artist_url: &ArtistUrl) -> Result<ArtistDiscography, Box<dyn Error>> {
-        let page_text = get_artist_discography_page(artist_url, &self.client).await?;
+    // What about artists with their own custom domain/page?
+    pub async fn artist_releases(&self, artist_url: &ArtistUrl) -> Result<Releases, Box<dyn Error>> {
+        Releases::for_artist(&artist_url, &self).await
+    }
 
+    pub async fn discography(&self, artist_url: &ArtistUrl) -> Result<ArtistDiscography, Box<dyn Error>> {
         let albums = vec![];
         let eps = vec![];
         let singles = vec![];
@@ -43,5 +46,8 @@ impl BcScraper {
             eps,
             singles,
         })
+    }
+
+    pub async fn release(&self, release_url: &ReleaseUrl) {
     }
 }

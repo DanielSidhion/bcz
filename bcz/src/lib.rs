@@ -1,17 +1,47 @@
 use std::{collections::HashMap, sync::{Arc, RwLock}};
 
 use bc_artist_directory::ArtistUrl;
-use bc_artist_page::ArtistDiscography;
 use chrono::{DateTime, Utc, TimeZone};
 use serde::{Deserialize, Serialize};
 
 pub mod bc;
 mod bc_artist_directory;
 mod bc_artist_page;
+mod bc_release_page;
 
 static BANDCAMP_DISCOGRAPHY_PATH: &'static str = "/music";
 
 pub(crate) type RuntimeScraperState = Arc<RwLock<ScraperState>>;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Track {
+    pub index: usize,
+    pub name: String,
+    pub duration: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Release {
+    Single {
+        name: String,
+        tracks: Vec<Track>,
+    },
+    Album {
+        name: String,
+        tracks: Vec<Track>,
+    },
+    EP {
+        name: String,
+        tracks: Vec<Track>,
+    },
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct ArtistDiscography {
+    pub albums: Vec<Release>,
+    pub eps: Vec<Release>,
+    pub singles: Vec<Release>,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArtistInfo {
